@@ -4,5 +4,11 @@
         "!csharp",
         "xml"
     ],
-    "cSpell.language": "en"
+    "cSpell.language": "en",
+    "cSpell.words": [
+        "dispath",
+        "reduxjs",
+        "tailwindcss",
+        "todos"
+    ]
 }
