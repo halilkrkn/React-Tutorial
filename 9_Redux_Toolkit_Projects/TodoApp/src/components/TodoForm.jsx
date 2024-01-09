@@ -7,6 +7,7 @@ function TodoForm() {
   const dispatch = useDispatch();
 
   const handleSubmit = (e) => {
+    if(!title) return
     e.preventDefault(); // İlgili sayfa her event'te sayfayı yenilememesi için.
     dispatch(addTodo({ id: nanoid(), title: title, completed: false }))
     setTitle('')
