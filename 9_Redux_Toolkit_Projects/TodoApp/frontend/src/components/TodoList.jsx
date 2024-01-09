@@ -1,20 +1,25 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   deleteTodo,
   selectFilteredTodos,
   toggle,
+  getTodosAsync,
 } from "../redux/todos/todosSlice";
-
+import Loading from "./Loading";
+import Error from "./Error";
 
 // Burada useSelector içerisindeki useSelector((state) => state.todos.items); tanımını todoSlice içerisinde tanımladık.
 // Ki artık başka yerlerde de aynı kodu tekrar tekrar yazmamak için ve olaki bir değişiklikte tek bir yerden değiştirerek kod bütünlüğünü bozmamış olduk.
 function TodoList() {
-  // const items = useSelector((state) => state.todos.items);
-  // const items = useSelector(selectTodos)
-  // const activeFilter = useSelector((state) => state.todos.activeFilter);
-  const filteredTodos = useSelector(selectFilteredTodos);
   const dispatch = useDispatch();
+  const filteredTodos = useSelector(selectFilteredTodos);
+  const isLoading = useSelector((state) => state.todos.isLoading);
+  const error = useSelector((state) => state.todos.error);
+
+  useEffect(() => {
+    dispatch(getTodosAsync());
+  }, []);
 
   const handleToggle = (id) => {
     dispatch(toggle(id));
@@ -26,15 +31,13 @@ function TodoList() {
     }
   };
 
-  // let filtered = [];
-  // filtered = items
-  // if(activeFilter !== "all") {
-  //   filtered = items.filter((item) =>
-  //     activeFilter === "active"
-  //       ? item.completed === false
-  //       : item.completed === true
-  //   );
-  // }
+  if (isLoading) {
+    return <Loading />;
+  }
+
+  if (error) {
+    return <Error message = {error} />;
+  }
 
   return (
     <ul className="todo-list">
