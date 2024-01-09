@@ -11,7 +11,7 @@ function TodoForm() {
 
     e.preventDefault(); // İlgili sayfa her event'te sayfayı yenilememesi için.
 
-    dispatch(addTodo({ id: nanoid(), title: title, completed: false }));
+    dispatch(addTodo(title));
     setTitle("");
   };
 
