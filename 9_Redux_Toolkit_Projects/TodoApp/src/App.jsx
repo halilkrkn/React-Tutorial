@@ -1,6 +1,6 @@
 import "./App.css";
 import Header from "./components/Header";
-import SubFooter from "./components/SubFooter";
+import Footer from "./components/Footer";
 import Todo from "./components/Todo";
 
 function App() {
@@ -10,7 +10,7 @@ function App() {
         <Header />
         <Todo />
       </section>
-      <SubFooter />
+      <Footer />
     </>
   );
 }

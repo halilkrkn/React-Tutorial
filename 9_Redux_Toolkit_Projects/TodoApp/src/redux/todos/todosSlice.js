@@ -40,5 +40,25 @@ export const {
   changeActiveFilter,
   clearCompleted,
 } = todosSlice.actions;
+
 export default todosSlice.reducer;
 
+// Burada ilgili her component içinde selector içerisine yazdığımız useSelector((state) => state.todos.items); yapısını sadece tek bir yerden yönetmek 
+// ve kullanılabilirliğini arttırmak için ve olası bir değişiklikte tek bir yerden o değişikliği sağlatmak için 
+// selector içerisine yazdığımız yapıları burada tanımlıyoruz.
+// Sonra ilgili componentte sadece useSelector() fonksiyonuna bunu useSelector(selecTodos), useSelector(selectFilteredTodos) vs. gibi şeklinde tanımlayarak useSelect işlemini yapbiliyoruz. 
+// Bu işlemlerin geneline selectors deniyor.
+// Yani selectorslar ile herhangi bir state altındaki herhangi elemanı seçip sonrasın o ilgili seçimi ilgili componentte useSelector() fonksiyonu içerisinde tnaımlayabiliriz/kullanabiliriz.
+export const selectTodos = (state) => state.todos.items;
+export const selectActiveFilter = (state) => state.todos.activeFilter
+export const selectFilteredTodos = (state) => {
+  if (state.todos.activeFilter === "all") {
+    return state.todos.items;
+  }
+
+  return state.todos.items.filter((todo) =>
+    state.todos.activeFilter === "active"
+      ? todo.completed === false
+      : todo.completed === true
+  );
+};
