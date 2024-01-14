@@ -1,13 +1,13 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  deleteTodo,
+  // deleteTodo,
+  // toggle,
   selectFilteredTodos,
-  toggle,
-  getTodosAsync,
 } from "../redux/todos/todosSlice";
 import Loading from "./Loading";
 import Error from "./Error";
+import {  getTodosAsync, deleteTodoAsync, toggleTodoAsync } from "../services/todoServices";
 
 // Burada useSelector içerisindeki useSelector((state) => state.todos.items); tanımını todoSlice içerisinde tanımladık.
 // Ki artık başka yerlerde de aynı kodu tekrar tekrar yazmamak için ve olaki bir değişiklikte tek bir yerden değiştirerek kod bütünlüğünü bozmamış olduk.
@@ -21,13 +21,13 @@ function TodoList() {
     dispatch(getTodosAsync());
   }, []);
 
-  const handleToggle = (id) => {
-    dispatch(toggle(id));
+  const handleToggle = (id, completed) => {
+    dispatch(toggleTodoAsync({ id: id, data: { completed } }));
   };
 
   const handleDelete = (id) => {
     if (window.confirm("Are you sure")) {
-      dispatch(deleteTodo(id));
+      dispatch(deleteTodoAsync(id));
     }
   };
 
@@ -36,7 +36,7 @@ function TodoList() {
   }
 
   if (error) {
-    return <Error message = {error} />;
+    return <Error message={error} />;
   }
 
   return (
@@ -57,7 +57,7 @@ function TodoList() {
               <input
                 className="toggle"
                 type="checkbox"
-                onChange={() => handleToggle(item.id)}
+                onChange={() => handleToggle(item.id, !item.completed)}
               />
               <label>{item.title}</label>
               <button

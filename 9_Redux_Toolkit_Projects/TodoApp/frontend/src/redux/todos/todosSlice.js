@@ -1,5 +1,6 @@
-import { createAsyncThunk, createSlice, nanoid } from "@reduxjs/toolkit";
-import axios from "axios";
+import {createSlice, nanoid } from "@reduxjs/toolkit";
+import { addTodoAsync, deleteTodoAsync, getTodosAsync, toggleTodoAsync } from "../../services/todoServices";
+
 
 // Redux Thunk
 // Api call(çağrım) işlemi yapmak için bir middleware katmanı olması gerek.
@@ -12,37 +13,15 @@ import axios from "axios";
 // Kısacası Redux Thunk ile asenkron verileride Global State Yönetiminde kullanmamıza olanak sağlıyor.
 // createAsyncThunk ile asenkron işlemleri yönetiyoruz.
 
-const GET_TODOS_ASYNC = "todos/getTodosAync";
-const ADD_TODO_ASYNC = "todos/addTodosAync";
-
-// BaseUrl
-axios.defaults.baseURL = "http://localhost:7000/";
-export const getTodosAsync = createAsyncThunk(
-  GET_TODOS_ASYNC,
-  async () => {
-    const res = await axios.get("todos").then((res) => res.data);
-    return res;
-  }
-  // async () => {
-  //   const res = await fetch("http://localhost:7000/todos");
-  //   return await res.json();
-  // }
-);
-
-// Burada Thunk ile database'e veri eklemesi yapıyoruz.
-// Yani eklediğimiz todo'lar database'e eklenecek ve arayüz her çalıştırıldığında göreceğiz.
-export const addTodoAsync = createAsyncThunk(ADD_TODO_ASYNC, (data) => {
-  const res = axios.post("todos", data).then((res) => res.data);
-  return res;
-});
-
 const initialTodosState = {
   items: [],
   isLoading: false,
   error: null,
-  activeFilter: "all",
-  addNewTodoIsLoading:false,
-  addNewTodoError: null
+  activeFilter: localStorage.getItem("activeFilter"),
+  addNewTodo: {
+    isLoading: false,
+    error: null
+  }
 };
 
 export const todosSlice = createSlice({
@@ -71,17 +50,17 @@ export const todosSlice = createSlice({
     //   },
     // },
 
-    toggle: (state, action) => {
-      const id = action.payload;
-      const item = state.items.find((item) => item.id === id);
+    // toggle: (state, action) => {
+    //   const id = action.payload;
+    //   const item = state.items.find((item) => item.id === id);
 
-      item.completed = !item.completed;
-    },
-    deleteTodo: (state, action) => {
-      const id = action.payload;
-      const filtered = state.items.filter((item) => item.id !== id);
-      state.items = filtered;
-    },
+    //   item.completed = !item.completed;
+    // },
+    // deleteTodo: (state, action) => {
+    //   const id = action.payload;
+    //   const filtered = state.items.filter((item) => item.id !== id);
+    //   state.items = filtered;
+    // },
     changeActiveFilter: (state, action) => {
       state.activeFilter = action.payload;
     },
@@ -112,22 +91,38 @@ export const todosSlice = createSlice({
 
       // ADD TODOS
       .addCase(addTodoAsync.pending, (state) => {
-        state.addNewTodoIsLoading = true
+        state.addNewTodo.isLoading = true;
       })
       .addCase(addTodoAsync.fulfilled, (state, action) => {
         state.items.push(action.payload);
-        state.addNewTodoIsLoading = false
+        state.addNewTodo.isLoading = false;
       })
       .addCase(addTodoAsync.rejected, (state, action) => {
-        state.addNewTodoIsLoading = false;
-        state.addNewTodoError = action.error.message;
+        state.addNewTodo.isLoading = false;
+        state.addNewTodo.error = action.error.message;
       })
+
+      // TOGGLE TODOS
+      .addCase(toggleTodoAsync.fulfilled, (state, action) => {
+        const index = state.items.findIndex(
+          (item) => item.id === action.payload.id
+        );
+        state.items[index] = action.payload;
+      })
+
+    // DELETE TODOS
+    // Burada ise Thunk sayesinde verileri database'den siliyoruz.
+    // Yani ilgili todo'yu silmek için ilgili id'yi gönderiyoruz ve o id'ye sahip todo database'den siliniyor.
+     .addCase(deleteTodoAsync.fulfilled, (state, action) => {
+        const filtered = state.items.filter((item) => item.id !== action.payload);
+        state.items = filtered;
+     })
   },
 });
 
 export const {
   // addTodo,
-  toggle,
+  // toggle,
   deleteTodo,
   changeActiveFilter,
   clearCompleted,

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addTodoAsync } from "../redux/todos/todosSlice";
 import Loading from "./Loading";
 import Error from "./Error";
+import { addTodoAsync } from "../services/todoServices";
 
 // Bu yapıları kullanmıyoruz
 // Çünkü Redux Thunk ile artık verileri database'e ekliyoruz.
@@ -13,8 +13,8 @@ import Error from "./Error";
 function TodoForm() {
   const [title, setTitle] = useState("");
   const dispatch = useDispatch();
-  const isLoading = useSelector((state) => state.todos.addNewTodoIsLoading);
-  const error = useSelector((state) => state.todos.error);
+  const isLoading = useSelector((state) => state.todos.addNewTodo.isLoading);
+  const error = useSelector((state) => state.todos.addNewTodo.error);
 
   const handleSubmit = (e) => {
     if (!title) return;
