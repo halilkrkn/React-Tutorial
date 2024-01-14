@@ -10,13 +10,17 @@ import axios from "axios";
 // Bunu da Redux Thunk yapısı ile gerçekleştiriyoruz.
 // Böylelikle Asenkron (yani Api ile çalıştığımız veriler ekleyip gösterip sildiğimiz bir database üzerinden) State yönetimini Redux Thunk ile gerçekleştirmiş oluyoruz.
 // Kısacası Redux Thunk ile asenkron verileride Global State Yönetiminde kullanmamıza olanak sağlıyor.
+// createAsyncThunk ile asenkron işlemleri yönetiyoruz.
 
+const GET_TODOS_ASYNC = "todos/getTodosAync";
+const ADD_TODO_ASYNC = "todos/addTodosAync";
+
+// BaseUrl
+axios.defaults.baseURL = "http://localhost:7000/";
 export const getTodosAsync = createAsyncThunk(
-  "todos/getTodosAsync",
-  () => {
-    const res = axios
-      .get("http://localhost:7000/todos")
-      .then((res) => res.data);
+  GET_TODOS_ASYNC,
+  async () => {
+    const res = await axios.get("todos").then((res) => res.data);
     return res;
   }
   // async () => {
@@ -25,35 +29,48 @@ export const getTodosAsync = createAsyncThunk(
   // }
 );
 
+// Burada Thunk ile database'e veri eklemesi yapıyoruz.
+// Yani eklediğimiz todo'lar database'e eklenecek ve arayüz her çalıştırıldığında göreceğiz.
+export const addTodoAsync = createAsyncThunk(ADD_TODO_ASYNC, (data) => {
+  const res = axios.post("todos", data).then((res) => res.data);
+  return res;
+});
+
 const initialTodosState = {
   items: [],
   isLoading: false,
   error: null,
   activeFilter: "all",
+  addNewTodoIsLoading:false,
+  addNewTodoError: null
 };
 
 export const todosSlice = createSlice({
   name: "todos",
   initialState: initialTodosState,
+  // Burası aslında inMemory yaklaşımı yani verileri belleğe kaydediyoruz.
+  // Ama ilgili yer her render edildiğinde yani çalıştırıldığında veriler siliyor.
+  // Bu yüzden Redux Thunk ile asenkron işlemleri yönetiyoruz ve gerçek database'e verileri aktarıyoruz.
   reducers: {
-    addTodo: {
-      // Buradaki reducer ile de normal state ve action olaylarımızı yönetiyoruz.
-      reducer: (state, action) => {
-        state.items.push(action.payload);
-      },
+    // addTodo: {
+    //   // Buradaki reducer ile de normal state ve action olaylarımızı yönetiyoruz.
+    //   reducer: (state, action) => {
+    //     state.items.push(action.payload);
+    //   },
 
-      // Buradaki prapere yapısı ile aslında sabit değerleri prepare içerisine koyup aslında bu işlemleri tek bir yerden yönetmiş oluruz.
-      // Böylelikle ilgili componentten sadece ilgili gereken değeri almamız yeterli olur.
-      prepare: (title) => {
-        return {
-          payload: {
-            id: nanoid(),
-            title,
-            completed: false,
-          },
-        };
-      },
-    },
+    //   // Buradaki prapere yapısı ile aslında sabit değerleri prepare içerisine koyup aslında bu işlemleri tek bir yerden yönetmiş oluruz.
+    //   // Böylelikle ilgili componentten sadece ilgili gereken değeri almamız yeterli olur.
+    //   prepare: (title) => {
+    //     return {
+    //       payload: {
+    //         id: nanoid(),
+    //         title,
+    //         completed: false,
+    //       },
+    //     };
+    //   },
+    // },
+
     toggle: (state, action) => {
       const id = action.payload;
       const item = state.items.find((item) => item.id === id);
@@ -74,8 +91,10 @@ export const todosSlice = createSlice({
     },
   },
   // Api işlemlerini Redux içerisinde kullanabilmek için extraReducer içerisine yazıyoruz.
+  // Burada ise Thunk sayesinde verileri database'e kaydediyoruz.
   extraReducers: (builder) => {
     builder
+      // GET TODOS
       // pending: işlem yüklenirken. Yani işlem beklemedeyse.
       .addCase(getTodosAsync.pending, (state) => {
         state.isLoading = true;
@@ -89,12 +108,25 @@ export const todosSlice = createSlice({
       .addCase(getTodosAsync.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.error.message;
-      });
+      })
+
+      // ADD TODOS
+      .addCase(addTodoAsync.pending, (state) => {
+        state.addNewTodoIsLoading = true
+      })
+      .addCase(addTodoAsync.fulfilled, (state, action) => {
+        state.items.push(action.payload);
+        state.addNewTodoIsLoading = false
+      })
+      .addCase(addTodoAsync.rejected, (state, action) => {
+        state.addNewTodoIsLoading = false;
+        state.addNewTodoError = action.error.message;
+      })
   },
 });
 
 export const {
-  addTodo,
+  // addTodo,
   toggle,
   deleteTodo,
   changeActiveFilter,
