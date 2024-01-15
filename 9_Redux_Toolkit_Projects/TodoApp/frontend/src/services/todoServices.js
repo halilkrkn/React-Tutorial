@@ -1,10 +1,11 @@
-import { createAsyncThunk} from "@reduxjs/toolkit";
+import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
 const GET_TODOS_ASYNC = "todos/getTodosAync";
 const ADD_TODO_ASYNC = "todos/addTodosAync";
 const TOGGLE_TODO_ASYNC = "todos/toggleTodosAync";
 const DELETE_TODO_ASYNC = "todos/deleteTodosAync";
+const CLEAR_TODO_ASYNC = "todos/clearTodosAync";
 
 // BaseUrl
 axios.defaults.baseURL = "http://localhost:7000/";
@@ -38,4 +39,9 @@ export const toggleTodoAsync = createAsyncThunk(
 export const deleteTodoAsync = createAsyncThunk(DELETE_TODO_ASYNC, (id) => {
   axios.delete(`todos/${id}`);
   return id;
+});
+
+export const clearTodoAsync = createAsyncThunk(CLEAR_TODO_ASYNC, () => {
+  const res = axios.patch("todos").then((res) => res.data);
+  return res;
 });

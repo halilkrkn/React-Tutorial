@@ -77,6 +77,15 @@ app.delete('/todos/:id', (req, res) => {
   res.send(todos);
 });
 
+app.patch('todos', (req, res) => {
+  const completed = Boolean(req.body.completed);
+  todos = todos.map((todo) => {
+    todo.completed = completed;
+    return todo;
+  });
+  return res.send(todos);
+})
+
 const PORT = 7000;
 
 app.listen(PORT, console.log(`Server running on port ${PORT}`.green.bold));

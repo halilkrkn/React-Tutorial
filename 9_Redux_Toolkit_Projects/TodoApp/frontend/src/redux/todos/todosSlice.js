@@ -1,6 +1,11 @@
-import {createSlice, nanoid } from "@reduxjs/toolkit";
-import { addTodoAsync, deleteTodoAsync, getTodosAsync, toggleTodoAsync } from "../../services/todoServices";
-
+import { createSlice, nanoid } from "@reduxjs/toolkit";
+import {
+  addTodoAsync,
+  clearTodoAsync,
+  deleteTodoAsync,
+  getTodosAsync,
+  toggleTodoAsync,
+} from "../../services/todoServices";
 
 // Redux Thunk
 // Api call(çağrım) işlemi yapmak için bir middleware katmanı olması gerek.
@@ -20,8 +25,8 @@ const initialTodosState = {
   activeFilter: localStorage.getItem("activeFilter"),
   addNewTodo: {
     isLoading: false,
-    error: null
-  }
+    error: null,
+  },
 };
 
 export const todosSlice = createSlice({
@@ -64,10 +69,10 @@ export const todosSlice = createSlice({
     changeActiveFilter: (state, action) => {
       state.activeFilter = action.payload;
     },
-    clearCompleted: (state) => {
-      const filtered = state.items.filter((item) => item.completed === false);
-      state.items = filtered;
-    },
+    // clearCompleted: (state) => {
+    //   const filtered = state.items.filter((item) => item.completed === false);
+    //   state.items = filtered;
+    // },
   },
   // Api işlemlerini Redux içerisinde kullanabilmek için extraReducer içerisine yazıyoruz.
   // Burada ise Thunk sayesinde verileri database'e kaydediyoruz.
@@ -110,13 +115,21 @@ export const todosSlice = createSlice({
         state.items[index] = action.payload;
       })
 
-    // DELETE TODOS
-    // Burada ise Thunk sayesinde verileri database'den siliyoruz.
-    // Yani ilgili todo'yu silmek için ilgili id'yi gönderiyoruz ve o id'ye sahip todo database'den siliniyor.
-     .addCase(deleteTodoAsync.fulfilled, (state, action) => {
-        const filtered = state.items.filter((item) => item.id !== action.payload);
+      // DELETE TODOS
+      // Burada ise Thunk sayesinde verileri database'den siliyoruz.
+      // Yani ilgili todo'yu silmek için ilgili id'yi gönderiyoruz ve o id'ye sahip todo database'den siliniyor.
+      .addCase(deleteTodoAsync.fulfilled, (state, action) => {
+        const filtered = state.items.filter(
+          (item) => item.id !== action.payload
+        );
         state.items = filtered;
-     })
+      })
+
+      // CLEAR TODOS
+      .addCase(clearTodoAsync.fulfilled, (state) => {
+        const filtered = state.items.filter((item) => item.completed === false);
+        state.items = filtered;
+      });
   },
 });
 

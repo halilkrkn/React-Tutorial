@@ -5,6 +5,7 @@ import {
   clearCompleted,
   selectActiveFilter,
 } from "../redux/todos/todosSlice";
+import { clearTodoAsync } from "../services/todoServices";
 
 function ContentFooter() {
   const items = useSelector((state) => state.todos.items);
@@ -18,7 +19,7 @@ function ContentFooter() {
   };
 
   const handleClearCompleted = () => {
-    dispatch(clearCompleted());
+    dispatch(clearTodoAsync());
   };
 
   useEffect(() => {
